@@ -34,7 +34,7 @@ class LazyLoadPaginationMixin:
     """
 
     paginator = LazyCountPaginator
-    change_list_template = "django_lazy_admin_count/lazy_pagination.html"
+    change_list_template = "django_admin_lazy_count/lazy_pagination.html"
 
     def get_urls(self):
         """

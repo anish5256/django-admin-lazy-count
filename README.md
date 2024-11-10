@@ -21,13 +21,7 @@ You can install the package directly from GitHub or PyPI:
 **Install from GitHub:**
 
 ```bash
-pip install git+https://github.com/yourusername/django-lazy-admin-pagination.git
-```
-
-**Or, install from PyPI (if published there):**
-
-```bash
-pip install django-lazy-admin-pagination
+pip install git+https://github.com/anish5256/django-lazy-admin-pagination.git
 ```
 
 ### Step 2: Add to `INSTALLED_APPS`
@@ -37,7 +31,7 @@ Add `django_lazy_admin_pagination` to the `INSTALLED_APPS` list in your Django p
 ```python
 INSTALLED_APPS = [
     ...,
-    'django_lazy_admin_pagination',
+    'django_admin_lazy_count',
 ]
 ```
 
@@ -57,23 +51,6 @@ class YourModelAdmin(LazyLoadPaginationMixin, admin.ModelAdmin):
     list_per_page = 100  # Customize the number of items per page as needed
 ```
 
-### Step 2: Verify Template Overrides
-
-Ensure that the `lazy_pagination.html` template is available in your project's template path:
-
-- **Default path in the package:**
-  ```
-  django_lazy_admin_pagination/templates/admin/your_app/yourmodel/lazy_pagination.html
-  ```
-- **Custom template directory (optional):** If needed, you can override or customize the template in your project by placing it in your own `templates/admin/your_app/yourmodel/` directory.
-
-### Step 3: Static Files
-
-Make sure to collect static files if you have any custom styles or scripts:
-
-```bash
-python manage.py collectstatic
-```
 
 ## Example Project Setup
 
@@ -98,35 +75,7 @@ class ProductAdmin(LazyLoadPaginationMixin, admin.ModelAdmin):
 - **`LazyLoadPaginationMixin`**: This mixin adds lazy-loading pagination functionality to the admin class.
 - **`list_per_page`**: Specifies the number of items displayed per page. Adjust this value as needed.
 
-## Customization and Advanced Usage
 
-### Customizing the Template
-
-If you want to modify how the pagination appears or behaves:
-
-1. Copy the `lazy_pagination.html` template from the package directory to your project's `templates/admin/your_app/yourmodel/`.
-2. Modify the copied template as desired.
-
-### Adding CSS or JavaScript
-
-To style or add custom JavaScript to your pagination controls:
-
-- Place your custom CSS files in `django_lazy_admin_pagination/static/css/custom_styles.css`.
-- Ensure you link them in your overridden templates if additional styles are needed.
-
-### Caching the Total Count
-
-For better performance on large datasets, the package uses a caching mechanism:
-
-- **Cache Backend**: Ensure you have a caching backend configured in your Django settings (e.g., `Memcached`, `Redis`, or Django's default cache).
-- **Custom Timeout**: You can adjust the cache timeout in `admin.py` when caching the total count.
-
-```python
-from django.core.cache import cache
-
-# Example usage in get_total_count method
-cache.set(cache_key, total_count, timeout=300)  # Adjust the timeout as needed
-```
 
 ## How It Works
 
@@ -148,6 +97,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Support and Issues
 
-For any issues or questions, please submit a ticket on the [GitHub issues page](https://github.com/anish5256/django-lazy-admin-pagination/issues).
+For any issues or questions, please submit a ticket on the [GitHub issues page](https://github.com/anish5256/django-admin-lazy-count.git/issues).
 
 ---

@@ -36,16 +36,15 @@
             <!-- Placeholder pagination controls with Previous and Next buttons -->
             <div class="paginator">
                 {% if cl.page_num > 1 %}
-                    <a href="?p={{ cl.page_num|add:"-2" }}">{% translate "Previous" %}</a>
+                    <a href="?p={{ cl.page_num|add:"-1" }}">{% translate "Previous" %}</a>
                 {% else %}
                     <span class="disabled">{% translate "Previous" %}</span>
                 {% endif %}
 
                 <span class="current">{{ cl.page_num }}</span>
+                <a href="?p={{ cl.page_num|add:"1" }}">{% translate "Next" %}</a>
 
-                <a href="?p={{ cl.page_num }}">{% translate "Next" %}</a>
-
-                <span class="small quiet">{% translate "Count is loading..." %}</span>
+<span class="small quiet">{% translate "Count is loading..." %}</span>
             </div>
         </div>
         <div id="pagination-controls" style="display: none;">
@@ -53,6 +52,7 @@
         </div>
     </div>
 {% endblock %}
+
 
 {% block extrahead %}
     {{ block.super }}

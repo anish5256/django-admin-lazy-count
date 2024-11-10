@@ -57,10 +57,10 @@ class LazyLoadPaginationMixin:
         """
         Return the total count of records in the queryset as a JSON response.
         """
-        queryset = self.get_queryset(request)
-        paginator = LazyCountPaginator(queryset, self.list_per_page)
-        total_count = paginator.calculate_count()
-        return JsonResponse({"total_count": total_count})
+
+        cl = self.get_changelist_instance(request)
+        return JsonResponse({"total_count": cl.paginator.calculate_count()})
+
 
     def changelist_view(self, request, extra_context=None):
         """

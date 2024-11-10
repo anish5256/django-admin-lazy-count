@@ -2,6 +2,13 @@ Here's a comprehensive guide for using the `django-lazy-admin-pagination` packag
 
 ---
 
+![Screenshot 2024-11-10 at 6 16 12 PM](https://github.com/user-attachments/assets/74eea2f5-4411-4811-a864-00b0608e579d)
+
+![Screenshot 2024-11-10 at 6 16 58 PM](https://github.com/user-attachments/assets/695888ad-449c-4a4e-8658-6f6d6c741e66)
+
+![Screenshot 2024-11-10 at 6 17 31 PM](https://github.com/user-attachments/assets/17ddc341-b3a6-4dab-a41b-200d4b7abffe)
+
+
 # Django Lazy Admin Pagination
 
 **django-lazy-admin-pagination** is a Django package designed to provide lazy-loading pagination for Django's admin interface. It enhances user experience by loading total counts asynchronously and updating pagination dynamically, improving performance on large datasets.
@@ -93,10 +100,10 @@ Contributions are welcome! If you'd like to contribute:
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Support and Issues
 
-For any issues or questions, please submit a ticket on the [GitHub issues page](https://github.com/anish5256/django-admin-lazy-count.git/issues).
+For any issues or questions, please submit a ticket on the [GitHub issues page]([https://github.com/anish5256/django-admin-lazy-count.git/issues](https://github.com/anish5256/django-admin-lazy-count/issues)).
 
 ---

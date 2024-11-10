@@ -1,0 +1,183 @@
+<!-- templates/admin/your_app/yourmodel/lazy_pagination.html -->
+
+{% extends "admin/change_list.html" %}
+{% load admin_urls static i18n %}
+
+{% block search %}
+    {% if cl.search_fields %}
+        <div id="toolbar">
+            <form id="changelist-search" method="get">
+                <div>
+                    <label for="searchbar">
+                        <img src="{% static "admin/img/search.svg" %}" alt="{% translate "Search" %}">
+                    </label>
+                    <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" autofocus>
+                    <input type="submit" value="{% translate 'Search' %}">
+
+                    <!-- Result count placeholder -->
+                    <span class="small quiet" id="result_count">
+                        {% translate "Count is loading..." %}
+                    </span>
+
+                    {% for pair in cl.params.items %}
+                        {% if pair.0 != search_var %}
+                            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block pagination %}
+    <div id="pagination-container">
+        <div id="pagination-placeholder">
+            <!-- Placeholder pagination controls with Previous and Next buttons -->
+            <div class="paginator">
+                {% if cl.page_num > 1 %}
+                    <a href="?p={{ cl.page_num|add:"-2" }}">{% translate "Previous" %}</a>
+                {% else %}
+                    <span class="disabled">{% translate "Previous" %}</span>
+                {% endif %}
+
+                <span class="current">{{ cl.page_num }}</span>
+
+                <a href="?p={{ cl.page_num }}">{% translate "Next" %}</a>
+
+                <span class="small quiet">{% translate "Count is loading..." %}</span>
+            </div>
+        </div>
+        <div id="pagination-controls" style="display: none;">
+            <!-- The real pagination controls will be injected here -->
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchTotalCount();
+    });
+
+    function fetchTotalCount() {
+        fetch('{% url opts|admin_urlname:"get_total_count" %}')
+            .then(response => response.json())
+            .then(data => {
+                updateResultCount(data.total_count);
+                updatePaginationControls(data.total_count);
+            })
+            .catch(error => {
+                console.error('Error fetching total count:', error);
+                document.getElementById('result_count').textContent = '{% translate "Error loading results." %}';
+                const placeholder = document.getElementById('pagination-placeholder');
+                placeholder.innerHTML = '<span>{% translate "Error loading pagination." %}</span>';
+            });
+    }
+
+    function updateResultCount(totalCount) {
+        const resultCountElement = document.getElementById('result_count');
+        if (resultCountElement) {
+            const singularName = '{{ opts.verbose_name|escapejs }}';
+            const pluralName = '{{ opts.verbose_name_plural|escapejs }}';
+            const itemLabel = totalCount === 1 ? singularName : pluralName;
+
+            let showAllLink = '';
+            if (totalCount > {{ cl.list_per_page }}) {
+                const showAllUrl = '{% url opts|admin_urlname:"changelist" %}?all=1';
+                showAllLink = ' (<a href="' + showAllUrl + '">{% translate "Show all" %}</a>)';
+            }
+
+            resultCountElement.innerHTML = totalCount + ' ' + itemLabel + showAllLink;
+        }
+    }
+
+    function updatePaginationControls(totalCount) {
+        const placeholder = document.getElementById('pagination-placeholder');
+        const controls = document.getElementById('pagination-controls');
+        placeholder.style.display = 'none';
+        controls.style.display = 'block';
+
+        controls.innerHTML = buildPagination(totalCount);
+    }
+
+    function getCurrentPageFromParams() {
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('p');
+    return page ? parseInt(page, 10) : 1;  // Adjusting for zero-based index
+}
+
+    function buildPagination(totalCount) {
+        const perPage = parseInt('{{ cl.list_per_page|escapejs }}', 10);
+        const currentPage = parseInt('{{ cl.page_num |escapejs}}', 10);
+        const numPages = Math.ceil(totalCount / perPage);
+
+        console.log(perPage, currentPage, numPages);
+
+        let html = '<div class="paginator">';
+
+        // Page Range Logic
+        const pageRange = getPageRange(currentPage, numPages);
+
+        pageRange.forEach(function(page) {
+            if (page === '...') {
+                html += '<span class="ellipsis">…</span> ';
+            } else if (page === currentPage) {
+                html += '<span class="current">' + page + '</span> ';
+            } else {
+                html += '<a href="?p=' + (page) + '">' + page + '</a> ';
+            }
+        });
+
+        // Append the total count and model name (do not remove this line)
+        html += ' ' + totalCount + ' {{ opts.verbose_name_plural }}';
+
+        html += '</div>';
+        return html;
+    }
+
+function getPageRange(currentPage, numPages) {
+    const maxPagesToShow = 5;
+    const pages = [];
+
+    if (numPages <= maxPagesToShow) {
+        for (let i = 1; i <= numPages; i++) {
+            pages.push(i);
+        }
+    } else {
+        const halfRange = Math.floor(maxPagesToShow / 2);
+        let startPage = currentPage - halfRange;
+        let endPage = currentPage + halfRange;
+
+        if (startPage < 1) {
+            startPage = 1;
+            endPage = maxPagesToShow;
+        } else if (endPage > numPages) {
+            startPage = numPages - maxPagesToShow + 1;
+            endPage = numPages;
+        }
+
+        if (startPage > 1) {
+            pages.push(1);
+            if (startPage > 2) {
+                pages.push('...');
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        if (endPage < numPages) {
+            if (endPage < numPages - 1) {
+                pages.push('...');
+            }
+            pages.push(numPages);
+        }
+    }
+
+    return pages;
+}
+    </script>
+{% endblock %}

@@ -50,7 +50,7 @@ In your `admin.py`, modify your model admin class to include `LazyLoadPagination
 
 ```python
 from django.contrib import admin
-from django_lazy_admin_pagination.admin import LazyLoadPaginationMixin
+from django_admin_lazy_count.main import LazyLoadPaginationMixin
 from .models import YourModel
 
 @admin.register(YourModel)
@@ -66,7 +66,7 @@ Here's an example `admin.py` configuration for a Django project using the packag
 ```python
 # admin.py
 from django.contrib import admin
-from django_lazy_admin_pagination.admin import LazyLoadPaginationMixin
+from django_lazy_admin_pagination.main import LazyLoadPaginationMixin
 from .models import Product
 
 @admin.register(Product)

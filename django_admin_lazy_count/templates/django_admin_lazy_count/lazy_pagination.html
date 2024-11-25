@@ -11,7 +11,7 @@
                     <label for="searchbar">
                         <img src="{% static "admin/img/search.svg" %}" alt="{% translate "Search" %}">
                     </label>
-                    <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" autofocus>
+                    <input type="text" size="40" name="q" value="{{ cl.query }}" id="searchbar" autofocus>
                     <input type="submit" value="{% translate 'Search' %}">
 
                     <!-- Result count placeholder -->
@@ -20,7 +20,7 @@
                     </span>
 
                     {% for pair in cl.params.items %}
-                        {% if pair.0 != search_var %}
+                        {% if pair.0 != 'q' %}
                             <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
                         {% endif %}
                     {% endfor %}
@@ -44,7 +44,7 @@
                 <span class="current">{{ cl.page_num }}</span>
                 <a href="?p={{ cl.page_num|add:"1" }}">{% translate "Next" %}</a>
 
-<span class="small quiet">{% translate "Count is loading..." %}</span>
+                <span class="small quiet">{% translate "Count is loading..." %}</span>
             </div>
         </div>
         <div id="pagination-controls" style="display: none;">
@@ -53,7 +53,6 @@
     </div>
 {% endblock %}
 
-
 {% block extrahead %}
     {{ block.super }}
     <script>
@@ -61,20 +60,28 @@
         fetchTotalCount();
     });
 
-    function fetchTotalCount() {
-        fetch('{% url opts|admin_urlname:"get_total_count" %}')
-            .then(response => response.json())
-            .then(data => {
-                updateResultCount(data.total_count);
-                updatePaginationControls(data.total_count);
-            })
-            .catch(error => {
-                console.error('Error fetching total count:', error);
-                document.getElementById('result_count').textContent = '{% translate "Error loading results." %}';
-                const placeholder = document.getElementById('pagination-placeholder');
-                placeholder.innerHTML = '<span>{% translate "Error loading pagination." %}</span>';
-            });
-    }
+function fetchTotalCount() {
+    // Get the current query parameters from the URL
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.delete('p');  // Remove the 'p' parameter (page number) if necessary
+
+    // Construct the API URL with query parameters
+    const apiUrl = '{% url opts|admin_urlname:"get_total_count" %}?' + currentParams.toString();
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            updateResultCount(data.total_count);
+            updatePaginationControls(data.total_count);
+        })
+        .catch(error => {
+            console.error('Error fetching total count:', error);
+            document.getElementById('result_count').textContent = '{% translate "Error loading results." %}';
+            const placeholder = document.getElementById('pagination-placeholder');
+            placeholder.innerHTML = '<span>{% translate "Error loading pagination." %}</span>';
+        });
+}
+
 
     function updateResultCount(totalCount) {
         const resultCountElement = document.getElementById('result_count');
@@ -103,19 +110,22 @@
     }
 
     function getCurrentPageFromParams() {
-    const params = new URLSearchParams(window.location.search);
-    const page = params.get('p');
-    return page ? parseInt(page, 10) : 1;  // Adjusting for zero-based index
-}
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get('p');
+        return page ? parseInt(page, 10) : 1;  // Adjusting for zero-based index
+    }
 
     function buildPagination(totalCount) {
         const perPage = parseInt('{{ cl.list_per_page|escapejs }}', 10);
-        const currentPage = parseInt('{{ cl.page_num |escapejs}}', 10);
+        const currentPage = getCurrentPageFromParams();  // Adjust for one-based indexing
         const numPages = Math.ceil(totalCount / perPage);
 
-        console.log(perPage, currentPage, numPages);
-
         let html = '<div class="paginator">';
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.delete('p');
+        // Get current query parameters excluding 'p'
+        const queryString = currentParams;
+        const queryPrefix = queryString ? '&' : '';
 
         // Page Range Logic
         const pageRange = getPageRange(currentPage, numPages);
@@ -126,58 +136,60 @@
             } else if (page === currentPage) {
                 html += '<span class="current">' + page + '</span> ';
             } else {
-                html += '<a href="?p=' + (page) + '">' + page + '</a> ';
+                // Adjust 'p' parameter to be zero-based if necessary
+                html += '<a href="?p=' + (page) + queryPrefix + queryString + '">' + page + '</a> ';
             }
         });
 
-        // Append the total count and model name (do not remove this line)
+        // Append total count and model name
         html += ' ' + totalCount + ' {{ opts.verbose_name_plural }}';
 
         html += '</div>';
         return html;
     }
 
-function getPageRange(currentPage, numPages) {
-    const maxPagesToShow = 5;
-    const pages = [];
 
-    if (numPages <= maxPagesToShow) {
-        for (let i = 1; i <= numPages; i++) {
-            pages.push(i);
-        }
-    } else {
-        const halfRange = Math.floor(maxPagesToShow / 2);
-        let startPage = currentPage - halfRange;
-        let endPage = currentPage + halfRange;
+    function getPageRange(currentPage, numPages) {
+        const maxPagesToShow = 5;
+        const pages = [];
 
-        if (startPage < 1) {
-            startPage = 1;
-            endPage = maxPagesToShow;
-        } else if (endPage > numPages) {
-            startPage = numPages - maxPagesToShow + 1;
-            endPage = numPages;
-        }
+        if (numPages <= maxPagesToShow) {
+            for (let i = 1; i <= numPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            const halfRange = Math.floor(maxPagesToShow / 2);
+            let startPage = currentPage - halfRange;
+            let endPage = currentPage + halfRange;
 
-        if (startPage > 1) {
-            pages.push(1);
-            if (startPage > 2) {
-                pages.push('...');
+            if (startPage < 1) {
+                startPage = 1;
+                endPage = maxPagesToShow;
+            } else if (endPage > numPages) {
+                startPage = numPages - maxPagesToShow + 1;
+                endPage = numPages;
+            }
+
+            if (startPage > 1) {
+                pages.push(1);
+                if (startPage > 2) {
+                    pages.push('...');
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                pages.push(i);
+            }
+
+            if (endPage < numPages) {
+                if (endPage < numPages - 1) {
+                    pages.push('...');
+                }
+                pages.push(numPages);
             }
         }
 
-        for (let i = startPage; i <= endPage; i++) {
-            pages.push(i);
-        }
-
-        if (endPage < numPages) {
-            if (endPage < numPages - 1) {
-                pages.push('...');
-            }
-            pages.push(numPages);
-        }
+        return pages;
     }
-
-    return pages;
-}
     </script>
 {% endblock %}
